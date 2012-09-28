@@ -25,6 +25,9 @@ base_dir = "/data/project/public_html/"
 # Allowed vhosts
 ok_vhosts = ['wm-bot']
 
+# Excluded users
+ignore_users = ['novaadmin']
+
 # How much to spam
 logging_level = logging.INFO
 
@@ -126,6 +129,10 @@ if __name__ == "__main__":
                 continue
 
             username = matches.group(1)
+            if username in ignore_users:
+                logger.info('Skipping %s as it\'s ignored' % username)
+                continue
+
             ok_vhosts.append(username)
 
             path = os.path.join(base_dir, username)
