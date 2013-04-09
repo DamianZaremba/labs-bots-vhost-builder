@@ -30,7 +30,7 @@ base_dir = "/data/project/public_html/"
 home_dir = "/home/"
 
 # Allowed vhosts
-ok_vhosts = ['wm-bot']
+ok_vhosts = ['wm-bot', 'addbot']
 
 # Excluded users
 ignore_users = ['novaadmin']
