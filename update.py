@@ -4,11 +4,15 @@ Nagios labs bot's vhost builder
 
 Author: Damian Zaremba <damian@damianzaremba.co.uk>
 
-This program is free software. It comes without any warranty, to
-the extent permitted by applicable law. You can redistribute it
-and/or modify it under the terms of the Do What The Fuck You Want
-To Public License, Version 2, as published by Sam Hocevar. See
-http://sam.zoy.org/wtfpl/COPYING for more details.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 '''
 # Import modules we need
 import re
@@ -21,6 +25,9 @@ from optparse import OptionParser
 
 # Our base dir
 base_dir = "/data/project/public_html/"
+
+# Our home dir
+home_dir = "/home/"
 
 # Allowed vhosts
 ok_vhosts = ['wm-bot']
@@ -155,10 +162,32 @@ if __name__ == "__main__":
             logger.info('Chowning %s to %d.%d' % (path, uid, gid))
             os.chown(path, uid, gid)
 
+            local_path = os.path.join(home_dir, username, 'public_html')
+            if not os.path.exists(local_path):
+                logger.info('%s does not exist, symlinking to %s' %
+                            (local_path, path))
+                os.symlink(path, local_path)
+
+                if not os.path.exists(local_path):
+                    logger.error('Failed to symlink %s to %s' % (path,
+                                                                 local_path))
+                else:
+                    logger.info('Chowning %s to %d.%d' % (local_path,
+                                                          uid, gid))
+                    os.chown(local_path, uid, gid)
+
         for vhost in os.listdir(base_dir):
+            if not os.path.isdir(os.path.join(base_dir, vhost)):
+                logger.info('Skipping %s as it is not a dir' % vhost)
+                continue
+
             if vhost not in ok_vhosts:
                 logger.info('%s appears to be bad, disabling' % vhost)
                 os.chmod(os.path.join(base_dir, vhost), 000)
                 os.chown(os.path.join(base_dir, vhost), 0, 0)
+
+    logger.info('Ensuring base permissions are correct')
+    os.chmod(base_dir, 0755)
+    os.chown(base_dir, 0, 0)
 
     ldap_disconnect(ldap_connection)
