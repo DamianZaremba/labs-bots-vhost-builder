@@ -166,7 +166,10 @@ if __name__ == "__main__":
             if not os.path.exists(local_path):
                 logger.info('%s does not exist, symlinking to %s' %
                             (local_path, path))
-                os.symlink(path, local_path)
+                try:
+                    os.symlink(path, local_path)
+                except OSError, e:
+                    pass
 
                 if not os.path.exists(local_path):
                     logger.error('Failed to symlink %s to %s' % (path,
